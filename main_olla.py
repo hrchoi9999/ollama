@@ -8,7 +8,12 @@ DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 
 def get_default_ollama_url():
-    return st.secrets.get("OLLAMA_BASE_URL", os.getenv("OLLAMA_BASE_URL", DEFAULT_OLLAMA_URL))
+    try:
+        secret_url = st.secrets.get("OLLAMA_BASE_URL")
+    except Exception:
+        secret_url = None
+
+    return secret_url or os.getenv("OLLAMA_BASE_URL", DEFAULT_OLLAMA_URL)
 
 
 st.set_page_config(page_title="Ollama_chat", page_icon="💬")
