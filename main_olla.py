@@ -1,10 +1,10 @@
 import os
 
+import requests
 import streamlit as st
-from langchain_ollama import ChatOllama
 
 
-DEFAULT_OLLAMA_URL = "https://stale-planes-heal.loca.lt"
+DEFAULT_OLLAMA_URL = "https://applicable-explains-shirts-auditor.trycloudflare.com"
 
 
 def get_default_ollama_url():
@@ -23,6 +23,7 @@ st.caption("로컬 또는 외부 Ollama 서버를 이용한 생성형 대화 앱
 
 model_name = st.text_input("Ollama 모델", value="gemma4:latest")
 base_url = st.text_input("Ollama 서버 주소", value=get_default_ollama_url())
+max_tokens = st.slider("최대 답변 길이", min_value=20, max_value=1000, value=300, step=20)
 user_message = st.text_area("질문을 입력하세요", height=160)
 
 if "chat_history" not in st.session_state:
@@ -34,13 +35,25 @@ if st.button("답변 생성", type="primary"):
     else:
         with st.spinner("Ollama가 답변을 생성하고 있습니다..."):
             try:
-                chat_model = ChatOllama(model=model_name, base_url=base_url)
-                response = chat_model.invoke(user_message)
+                payload = {
+                    "model": model_name,
+                    "messages": [{"role": "user", "content": user_message}],
+                    "stream": False,
+                    "think": False,
+                    "options": {"num_predict": max_tokens},
+                }
+                response = requests.post(
+                    f"{base_url.rstrip('/')}/api/chat",
+                    json=payload,
+                    timeout=180,
+                )
+                response.raise_for_status()
+                response_text = response.json()["message"]["content"]
                 st.session_state.chat_history.insert(
                     0,
                     {
                         "question": user_message,
-                        "answer": response.content,
+                        "answer": response_text,
                         "model": model_name,
                     },
                 )
