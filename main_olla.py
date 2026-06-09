@@ -4,7 +4,7 @@ import streamlit as st
 from langchain_ollama import ChatOllama
 
 
-DEFAULT_OLLAMA_URL = "http://localhost:11434"
+DEFAULT_OLLAMA_URL = "https://stale-planes-heal.loca.lt"
 
 
 def get_default_ollama_url():
